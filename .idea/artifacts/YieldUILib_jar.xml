@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="YieldUILib:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/YieldUILib_jar</output-path>
+    <root id="archive" name="yield-uilib.jar">
+      <element id="module-output" name="YieldUILib" />
+      <element id="library" level="module" name="YieldUtils" module-name="YieldUILib" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/jsvg-1.6.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/image-editor.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/flatlaf-3.5.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/flatlaf-extras-3.5.4.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
