@@ -5,6 +5,7 @@ import com.xebisco.yieldengine.uilib.theme.DarkerLaf;
 import com.xebisco.yieldengine.utils.*;
 import gui.ImageEditor;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -16,6 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -451,7 +453,8 @@ public class UIUtils {
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         dialog.setMinimumSize(new Dimension(300, 100));
 
-        dialog.add(getObjectsFieldsPanel(new Object[]{object}, false, () -> {}, dialog::dispose).second());
+        dialog.add(getObjectsFieldsPanel(new Object[]{object}, false, () -> {
+        }, dialog::dispose).second());
         dialog.pack();
 
         dialog.setLocationRelativeTo(frame);
@@ -468,8 +471,59 @@ public class UIUtils {
         ObjectUtils.apply(apply, object);
     }
 
+    public static void about(Frame frame, String aboutHtml, String appTitle) {
+        JDialog dialog = new JDialog(frame, "About", true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.setMinimumSize(new Dimension(400, 350));
+
+        JLabel title = new JLabel(appTitle);
+        try {
+            title.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(UIUtils.class.getResource("/icons/logo1.png"))).getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        title.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        title.setIconTextGap(10);
+        dialog.add(title, BorderLayout.NORTH);
+
+        JLabel label = new JLabel("""
+                <html>
+                    <p>""" + aboutHtml + """
+                </p><p> </p>
+                <p> VM:\s""" + System.getProperty("java.vm.name") + """
+                </p>
+                <p>VM version:\s""" + System.getProperty("java.vm.version") + """
+                    </p>
+                    <p> </p>
+                    <p>
+                        Xebisco @2022-2024
+                    </p>
+                </html>
+                """);
+        label.setVerticalAlignment(SwingConstants.TOP);
+        label.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        dialog.add(label);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton closeButton = new JButton("Close");
+        closeButton.setMnemonic('C');
+        closeButton.addActionListener(_ -> dialog.dispose());
+        dialog.getRootPane().setDefaultButton(closeButton);
+        buttonPanel.add(closeButton);
+
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setLocationRelativeTo(frame);
+        dialog.setVisible(true);
+    }
+
     public static void addPaf(Component component) {
         pafComponents.add(component);
+    }
+
+    public static boolean confirm(Component parent, String message) {
+        return JOptionPane.showConfirmDialog(parent, message, "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
 
     public static void processPaf() {

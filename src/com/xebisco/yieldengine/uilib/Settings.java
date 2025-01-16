@@ -26,30 +26,47 @@ public class Settings implements Serializable {
 
         @Override
         public Pair<Runnable, DefaultMutableTreeNode[]> tabs() {
-            ArrayList<DefaultMutableTreeNode> nodes = new ArrayList<>();
-
-            DefaultMutableTreeNode user = new DefaultMutableTreeNode();
-            ArrayList<Runnable> applyList = new ArrayList<>();
-
-            JPanel workspacePanel = new JPanel(new BorderLayout());
-            workspacePanel.setName("Workspace");
-            Pair<Runnable, JPanel> v = UIUtils.getObjectsFieldsPanel(new Object[]{workspace});
-            applyList.add(v.first());
-            workspacePanel.add(v.second());
-            DefaultMutableTreeNode workspaceNode = new DefaultMutableTreeNode(workspacePanel);
-            user.add(workspaceNode);
-
-
-            UIUtils.depthPanel(user, "User");
-            nodes.add(user);
-
-            return new Pair<>(() -> applyList.forEach(Runnable::run), nodes.toArray(new DefaultMutableTreeNode[0]));
+            Pair<ArrayList<Runnable>, ArrayList<DefaultMutableTreeNode>> tabs = Settings.this.tabs();
+            return new Pair<>(() -> tabs.first().forEach(Runnable::run), tabs.second().toArray(new DefaultMutableTreeNode[0]));
         }
 
         @Override
         public Runnable help() {
-            return () -> {};
+            return Settings.this.help();
         }
+    }
+
+    protected Runnable help() {
+        return () -> UIUtils.about(null, "", "Help Page");
+    }
+
+    protected Pair<Runnable, DefaultMutableTreeNode> workspaceTab() {
+        JPanel workspacePanel = new JPanel(new BorderLayout());
+        workspacePanel.setName("Workspace");
+        Pair<Runnable, JPanel> v = UIUtils.getObjectsFieldsPanel(new Object[]{workspace});
+        workspacePanel.add(v.second());
+        return new Pair<>(v.first(), new DefaultMutableTreeNode(workspacePanel));
+    }
+
+    protected Pair<Runnable, DefaultMutableTreeNode> userTab() {
+        DefaultMutableTreeNode user = new DefaultMutableTreeNode();
+        Pair<Runnable, DefaultMutableTreeNode> workspaceTab = workspaceTab();
+        user.add(workspaceTab.second());
+
+        return new Pair<>(workspaceTab.first(), user);
+    }
+
+    protected Pair<ArrayList<Runnable>, ArrayList<DefaultMutableTreeNode>> tabs() {
+        ArrayList<DefaultMutableTreeNode> nodes = new ArrayList<>();
+
+        ArrayList<Runnable> applyList = new ArrayList<>();
+
+        Pair<Runnable, DefaultMutableTreeNode> userTab = userTab();
+        UIUtils.depthPanel(userTab.second(), "User");
+
+        nodes.add(userTab.second());
+
+        return new Pair<>(applyList, nodes);
     }
 
     public static void loadSettings(Class<? extends Settings> settingsClass) {

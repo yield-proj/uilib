@@ -24,9 +24,11 @@ import java.util.stream.Stream;
 public class ProjectMng extends OptionsFrame {
     private JList<Project> projectsJList;
     private final Class<? extends ProjectEditor> projectEditorClass;
+    private final Class<? extends Project> projectClass;
 
-    public ProjectMng(Class<? extends ProjectEditor> projectEditorClass) {
+    public ProjectMng(Class<? extends ProjectEditor> projectEditorClass, Class<? extends Project> projectClass) {
         this.projectEditorClass = projectEditorClass;
+        this.projectClass = projectClass;
     }
 
     public final static ColorPalette PROJECT_PALETTE = new ColorPalette(null, "project");
@@ -165,24 +167,30 @@ public class ProjectMng extends OptionsFrame {
         toolBar.add(new AbstractAction("New Project") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new JDialog(ProjectMng.this, "New Project", true);
-                Project project = new Project();
-                dialog.add(UIUtils.getObjectsFieldsPanel(new Object[]{project}, false, () -> {
-                    File projectDir = new File(Settings.INSTANCE.workspace.getDirectory(), project.getName());
-                    addProject(project, projectDir);
-                    reload();
-                }, dialog::dispose).second());
-                dialog.pack();
-                dialog.setLocationRelativeTo(ProjectMng.this);
-                dialog.setVisible(true);
+                try {
+                    Project project = projectClass.getDeclaredConstructor().newInstance();
+                    JDialog dialog = new JDialog(ProjectMng.this, "New Project", true);
+                    dialog.add(UIUtils.getObjectsFieldsPanel(new Object[]{project}, false, () -> {
+                        File projectDir = new File(Settings.INSTANCE.workspace.getDirectory(), project.getName());
+                        addProject(project, projectDir);
+                        reload();
+                    }, dialog::dispose).second());
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(ProjectMng.this);
+                    dialog.setVisible(true);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException ex) {
+                    throw new RuntimeException(ex);
+                }
+
             }
         });
         toolBar.add(new AbstractAction("Open") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 OpenProject openProject = UIUtils.openDialog(new OpenProject().setProjectFile(Settings.INSTANCE.workspace.getDirectory()), ProjectMng.this);
-                    addProject(openProject.getProjectFile());
-                    reload();
+                addProject(openProject.getProjectFile());
+                reload();
             }
         });
         toolBar.add(new AbstractAction("Settings") {
