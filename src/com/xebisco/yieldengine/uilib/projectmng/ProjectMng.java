@@ -3,10 +3,8 @@ package com.xebisco.yieldengine.uilib.projectmng;
 import com.formdev.flatlaf.icons.FlatMenuArrowIcon;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.xebisco.yieldengine.uilib.*;
-import com.xebisco.yieldengine.uilib.Settings.Workspace;
 import com.xebisco.yieldengine.utils.ArrayUtils;
 import com.xebisco.yieldengine.utils.ColorPalette;
-import com.xebisco.yieldengine.utils.FileUtils;
 import com.xebisco.yieldengine.utils.Pair;
 
 import javax.swing.*;
@@ -101,7 +99,7 @@ public class ProjectMng extends OptionsFrame {
                     popupMenu.add(new AbstractAction("Remove") {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            Settings.INSTANCE.workspace.setProjects(ArrayUtils.remove(Settings.INSTANCE.workspace.getProjects(), p));
+                            SettingsWindow.INSTANCE.workspace.setProjects(ArrayUtils.remove(SettingsWindow.INSTANCE.workspace.getProjects(), p.getProjectPath()));
                             reload();
                         }
                     });
@@ -111,9 +109,21 @@ public class ProjectMng extends OptionsFrame {
             });
         }
         if (filter == null) filter = "";
-        projectsJList.setListData(Stream.of(Settings.INSTANCE.workspace.getProjects()).filter(p -> p.getName().toUpperCase().contains(filter.toUpperCase())).toArray(Project[]::new));
+        projectsJList.setListData(getProjects(Stream.of(SettingsWindow.INSTANCE.workspace.getProjects()).filter(p -> p.getName().toUpperCase().contains(filter.toUpperCase())).toArray(File[]::new)));
 
         SwingUtilities.invokeLater(() -> ((JViewport) projectsJList.getParent()).updateUI());
+    }
+
+    public static Project[] getProjects(File[] files) {
+        List<Project> projects = new ArrayList<>();
+        for (File file : files) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                projects.add(((Project) ois.readObject()).setProjectPath(file).setProjectDir(file.getParentFile()));
+            } catch (Exception e) {
+                UIUtils.error(e);
+            }
+        }
+        return projects.toArray(new Project[0]);
     }
 
     public void addProject(Project project, File projectDir) {
@@ -130,7 +140,7 @@ public class ProjectMng extends OptionsFrame {
             }
             project.setProjectPath(projectFile);
             project.setProjectDir(projectDir);
-            Settings.INSTANCE.workspace.setProjects(ArrayUtils.insertFirst(Settings.INSTANCE.workspace.getProjects(), project));
+            SettingsWindow.INSTANCE.workspace.setProjects(ArrayUtils.insertFirst(SettingsWindow.INSTANCE.workspace.getProjects(), project.getProjectPath()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -171,7 +181,7 @@ public class ProjectMng extends OptionsFrame {
                     Project project = projectClass.getDeclaredConstructor().newInstance();
                     JDialog dialog = new JDialog(ProjectMng.this, "New Project", true);
                     dialog.add(UIUtils.getObjectsFieldsPanel(new Object[]{project}, false, () -> {
-                        File projectDir = new File(Settings.INSTANCE.workspace.getDirectory(), project.getName());
+                        File projectDir = new File(SettingsWindow.INSTANCE.workspace.getDirectory(), project.getName());
                         addProject(project, projectDir);
                         reload();
                     }, dialog::dispose).second());
@@ -188,7 +198,7 @@ public class ProjectMng extends OptionsFrame {
         toolBar.add(new AbstractAction("Open") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OpenProject openProject = UIUtils.openDialog(new OpenProject().setProjectFile(Settings.INSTANCE.workspace.getDirectory()), ProjectMng.this);
+                OpenProject openProject = UIUtils.openDialog(new OpenProject().setProjectFile(SettingsWindow.INSTANCE.workspace.getDirectory()), ProjectMng.this);
                 addProject(openProject.getProjectFile());
                 reload();
             }
@@ -196,7 +206,7 @@ public class ProjectMng extends OptionsFrame {
         toolBar.add(new AbstractAction("Settings") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Settings.INSTANCE.openSettings(ProjectMng.this);
+                SettingsWindow.openSettings(ProjectMng.this);
             }
         });
         toolBar.add(new AbstractAction("Reload") {

@@ -34,22 +34,16 @@ public class UIUtils {
     }
 
     static {
-        RETURN_FIELD_MAP.put(String.class, ((value, field) -> {
-            if (field.getType().isArray())
-                field = null;
-            return new StringField(field == null ? null : field.getName(), (String) value, field == null || field.isAnnotationPresent(Editable.class));
-        }));
-        RETURN_FIELD_MAP.put(Color4f.class, ((value, field) -> {
-            if (field.getType().isArray())
-                field = null;
-            return new ColorField(field == null ? null : field.getName(), (Color4f) value, field == null || field.isAnnotationPresent(Editable.class));
-        }));
-        RETURN_FIELD_MAP.put(File.class, ((value, field) -> {
-            FileExtensions extensions = field.getAnnotation(FileExtensions.class);
-            if (field.getType().isArray())
-                field = null;
-            return new FileField(field == null ? null : field.getName(), (File) value, extensions, field == null || field.isAnnotationPresent(Editable.class));
-        }));
+        RETURN_FIELD_MAP.put(String.class, ((name, value, editable, _) -> new StringField(name, (String) value, editable)));
+        RETURN_FIELD_MAP.put(Color4f.class, ((name, value, editable, _) -> new ColorField(name, (Color4f) value, editable)));
+        RETURN_FIELD_MAP.put(File.class, ((name, value, editable, field) -> new FileField(name, (File) value, field.getAnnotation(FileExtensions.class), editable)));
+
+        RETURN_FIELD_MAP.put(Byte.class, ((name, value, editable, _) -> new NumberField<>(name, (Byte) value, Byte.class, editable)));
+        RETURN_FIELD_MAP.put(Short.class, ((name, value, editable, _) -> new NumberField<>(name, (Short) value, Short.class, editable)));
+        RETURN_FIELD_MAP.put(Integer.class, ((name, value, editable, _) -> new NumberField<>(name, (Integer) value, Integer.class, editable)));
+        RETURN_FIELD_MAP.put(Long.class, ((name, value, editable, _) -> new NumberField<>(name, (Long) value, Long.class, editable)));
+        RETURN_FIELD_MAP.put(Float.class, ((name, value, editable, _) -> new NumberField<>(name, (Float) value, Float.class, editable)));
+        RETURN_FIELD_MAP.put(Double.class, ((name, value, editable, _) -> new NumberField<>(name, (Double) value, Double.class, editable)));
 
         OpenFile openImage = (file, window) -> new ImageEditor(window, file).setVisible(true);
 
@@ -97,7 +91,7 @@ public class UIUtils {
                 ret.add(new Pair<>(field.first(), new ArrayField(field.second().second(), (Object[]) field.second().first(), field.second().second().getType().getComponentType(), field.second().second().isAnnotationPresent(Editable.class))));
             } else {
                 try {
-                    ret.add(new Pair<>(field.first(), RETURN_FIELD_MAP.get(field.second().second().getType()).getEditableField(field.second().first(), field.second().second())));
+                    ret.add(new Pair<>(field.first(), RETURN_FIELD_MAP.get(field.second().second().getType()).getEditableField(field.second().second().getName(), field.second().first(), field.second().second().isAnnotationPresent(Editable.class), field.second().second())));
                 } catch (NullPointerException e) {
                     ret.add(new Pair<>(field.first(), new ObjectField(field.first(), field.second().first())));
                 /*
@@ -120,7 +114,10 @@ public class UIUtils {
             Logger.debug("No support for multi-dimensional arrays.");
         } else {
             try {
-                field = RETURN_FIELD_MAP.get(arrayField.getType().getComponentType()).getEditableField((Serializable) object, arrayField);
+                Field f = arrayField;
+                if (arrayField.getType().isArray())
+                    f = null;
+                field = RETURN_FIELD_MAP.get(arrayField.getType().getComponentType()).getEditableField(f == null ? null : f.getName(), (Serializable) object, f == null || f.isAnnotationPresent(Editable.class), arrayField);
             } catch (NullPointerException e) {
                 field = new ObjectField(null, (Serializable) object);
                 /*
@@ -233,9 +230,10 @@ public class UIUtils {
     }
 
     public static JLabel nameLabel(String name) {
-        JLabel label = new JLabel(prettyString(name) + ":");
+        JLabel label = new JLabel();
         if (name == null) label.setText(null);
         else {
+            label.setText(prettyString(name) + ":");
             addPaf(label);
         }
         return label;

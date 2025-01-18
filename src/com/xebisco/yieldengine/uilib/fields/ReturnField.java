@@ -4,5 +4,5 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 
 public interface ReturnField {
-    EditableField getEditableField(Serializable value, Field field);
+    EditableField getEditableField(String name, Serializable value, boolean editable, Field field);
 }

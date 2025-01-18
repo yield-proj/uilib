@@ -3,17 +3,13 @@ package com.xebisco.yieldengine.uilib.comm;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import com.xebisco.yieldengine.uilib.DocumentChangeListener;
 import com.xebisco.yieldengine.uilib.SearchBar;
-import com.xebisco.yieldengine.uilib.Settings;
 import com.xebisco.yieldengine.uilib.TextPrompt;
-import com.xebisco.yieldengine.uilib.projectmng.Project;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class CommandsDialog extends JDialog {
     private static final List<MappedCommand> COMMANDS = new ArrayList<>();
