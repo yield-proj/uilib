@@ -4,6 +4,7 @@ import com.xebisco.yieldengine.uilib.fields.*;
 import com.xebisco.yieldengine.uilib.theme.DarkerLaf;
 import com.xebisco.yieldengine.utils.*;
 import gui.ImageEditor;
+import org.joml.Vector2f;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -39,11 +40,22 @@ public class UIUtils {
         RETURN_FIELD_MAP.put(File.class, ((name, value, editable, field) -> new FileField(name, (File) value, field.getAnnotation(FileExtensions.class), editable)));
 
         RETURN_FIELD_MAP.put(Byte.class, ((name, value, editable, _) -> new NumberField<>(name, (Byte) value, Byte.class, editable)));
+        RETURN_FIELD_MAP.put(byte.class, ((name, value, editable, _) -> new NumberField<>(name, (byte) value, Byte.class, editable)));
         RETURN_FIELD_MAP.put(Short.class, ((name, value, editable, _) -> new NumberField<>(name, (Short) value, Short.class, editable)));
+        RETURN_FIELD_MAP.put(short.class, ((name, value, editable, _) -> new NumberField<>(name, (short) value, Short.class, editable)));
         RETURN_FIELD_MAP.put(Integer.class, ((name, value, editable, _) -> new NumberField<>(name, (Integer) value, Integer.class, editable)));
+        RETURN_FIELD_MAP.put(int.class, ((name, value, editable, _) -> new NumberField<>(name, (Integer) value, int.class, editable)));
         RETURN_FIELD_MAP.put(Long.class, ((name, value, editable, _) -> new NumberField<>(name, (Long) value, Long.class, editable)));
+        RETURN_FIELD_MAP.put(long.class, ((name, value, editable, _) -> new NumberField<>(name, (long) value, Long.class, editable)));
         RETURN_FIELD_MAP.put(Float.class, ((name, value, editable, _) -> new NumberField<>(name, (Float) value, Float.class, editable)));
+        RETURN_FIELD_MAP.put(float.class, ((name, value, editable, _) -> new NumberField<>(name, (float) value, Float.class, editable)));
         RETURN_FIELD_MAP.put(Double.class, ((name, value, editable, _) -> new NumberField<>(name, (Double) value, Double.class, editable)));
+        RETURN_FIELD_MAP.put(double.class, ((name, value, editable, _) -> new NumberField<>(name, (double) value, Double.class, editable)));
+
+        RETURN_FIELD_MAP.put(Boolean.class, ((name, value, editable, _) -> new BooleanField(name, (Boolean) value, editable)));
+        RETURN_FIELD_MAP.put(boolean.class, ((name, value, editable, _) -> new BooleanField(name, (boolean) value, editable)));
+
+        RETURN_FIELD_MAP.put(Vector2f.class, ((name, value, editable, _) -> new Vector2Field(name, (Vector2f) value, editable)));
 
         OpenFile openImage = (file, window) -> new ImageEditor(window, file).setVisible(true);
 

@@ -4,12 +4,16 @@ import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 public class NumberTextField<T extends Number> extends JFormattedTextField {
+    private final Class<? extends Number> numberClass;
+
     public NumberTextField(Class<T> numberClass, boolean allowNegatives) {
         super(getNumberFormatter(numberClass, allowNegatives));
+        this.numberClass = numberClass;
         setText("0");
 
         addFocusListener(new FocusListener() {
@@ -57,7 +61,19 @@ public class NumberTextField<T extends Number> extends JFormattedTextField {
 
     @Override
     public T getValue() {
+        if(getText().isEmpty() && numberClass != null) {
+            try {
+                //noinspection unchecked
+                return (T) numberClass.getDeclaredMethod("valueOf",String.class).invoke(null, "0");
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
         //noinspection unchecked
         return (T) super.getValue();
+    }
+
+    public Class<? extends Number> getNumberClass() {
+        return numberClass;
     }
 }
