@@ -20,6 +20,6 @@ public class NumberField<T extends Number> extends EditableField {
 
     @Override
     public T getValue() {
-        return textField.getValue();
+        return textField.getNumberValue();
     }
 }

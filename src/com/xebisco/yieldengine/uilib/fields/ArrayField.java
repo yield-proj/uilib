@@ -1,17 +1,15 @@
 package com.xebisco.yieldengine.uilib.fields;
 
-import com.formdev.flatlaf.ui.*;
+import com.formdev.flatlaf.ui.FlatButtonBorder;
+import com.formdev.flatlaf.ui.FlatTableHeaderBorder;
 import com.xebisco.yieldengine.uilib.UIUtils;
 import com.xebisco.yieldengine.utils.ArrayUtils;
+import com.xebisco.yieldengine.utils.CustomAdd;
 import com.xebisco.yieldengine.utils.ObjectUtils;
 import com.xebisco.yieldengine.utils.Pair;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -48,7 +46,7 @@ public class ArrayField extends EditableField {
         JButton addButton = new JButton("+");
         topToolBar.add(addButton);
         topToolBar.setEnabled(editable);
-        itemsPanel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+        itemsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         JButton removeButton = new JButton("-");
 
@@ -56,12 +54,29 @@ public class ArrayField extends EditableField {
 
         if (array.length == 0) removeButton.setEnabled(false);
 
-        addButton.addActionListener(_ -> {
-            reload();
-            this.array = ArrayUtils.insertLast(this.array, ObjectUtils.newInstance(arrayClass));
-            removeButton.setEnabled(true);
-            reload();
-        });
+        if (arrayField.isAnnotationPresent(CustomAdd.class)) {
+            addButton.addActionListener(_ -> {
+                reload();
+                try {
+                    Class<?> nrc = Class.forName(arrayField.getAnnotation(CustomAdd.class).addAction());
+                    Object t = nrc.getDeclaredMethod("returnNewObject").invoke(nrc.getDeclaredConstructor().newInstance());
+                    if (t != null)
+                        this.array = ArrayUtils.insertLast(this.array, t);
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException |
+                         ClassNotFoundException | InstantiationException e) {
+                    throw new RuntimeException(e);
+                }
+                removeButton.setEnabled(true);
+                reload();
+            });
+        } else {
+            addButton.addActionListener(_ -> {
+                reload();
+                this.array = ArrayUtils.insertLast(this.array, ObjectUtils.newInstance(arrayClass));
+                removeButton.setEnabled(true);
+                reload();
+            });
+        }
         removeButton.addActionListener(_ -> {
             if (this.array.length == 0) return;
             reload();

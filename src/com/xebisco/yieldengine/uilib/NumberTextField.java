@@ -61,6 +61,11 @@ public class NumberTextField<T extends Number> extends JFormattedTextField {
 
     @Override
     public T getValue() {
+        //noinspection unchecked
+        return (T) super.getValue();
+    }
+
+    public T getNumberValue() {
         if(getText().isEmpty() && numberClass != null) {
             try {
                 //noinspection unchecked

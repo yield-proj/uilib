@@ -1,5 +1,6 @@
 package com.xebisco.yieldengine.uilib;
 
+import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.xebisco.yieldengine.uilib.fields.*;
 import com.xebisco.yieldengine.uilib.theme.DarkerLaf;
 import com.xebisco.yieldengine.utils.*;
@@ -123,7 +124,7 @@ public class UIUtils {
     public static EditableField getArrayField(Object object, Field arrayField) {
         EditableField field = null;
         if (arrayField.getType().getComponentType().isArray()) {
-            Logger.debug("No support for multi-dimensional arrays.");
+            System.err.println("No support for multi-dimensional arrays.");
         } else {
             try {
                 Field f = arrayField;
@@ -284,11 +285,13 @@ public class UIUtils {
             };
             int finalI = i;
             Pair<Runnable, JPanel> obj;
+            EditableField field;
             if (arrayField != null) {
-                EditableField field = getArrayField(object, arrayField);
+                field = getArrayField(object, arrayField);
                 obj = getFieldsPanel(List.of(new Pair<>(null, field)), false, null, object, null);
                 applyList.add(() -> objects[finalI] = field.getValue());
             } else {
+                field = null;
                 obj = getFieldsPanel(getFields(object), false, null, object, null);
                 applyList.add(obj.first());
             }
@@ -316,7 +319,13 @@ public class UIUtils {
                 JToolBar arrayToolBar = new JToolBar();
                 arrayToolBar.setFloatable(false);
                 arrayToolBar.setRollover(true);
-                arrayToolBar.add(new AbstractAction(i + ":") {
+                boolean alt = arrayField.isAnnotationPresent(AltArray.class);
+                if (alt) {
+                    arrayToolBar.add(nameLabel(object.getClass().getSimpleName()));
+                    arrayToolBar.add(Box.createHorizontalGlue());
+                    arrayToolBar.setBorder(new FlatLineBorder(new Insets(0, 3, 0, 3), UIManager.getColor("Component.borderColor"), 100, 8));
+                }
+                arrayToolBar.add(new AbstractAction(alt ? "More" : i + ":") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         JPopupMenu popupMenu = new JPopupMenu();
@@ -344,10 +353,17 @@ public class UIUtils {
                             }
                         });
                         popupMenu.add(item);
-                        popupMenu.show(arrayToolBar, 0, arrayToolBar.getHeight());
+                        if (alt) {
+                            popupMenu.show(arrayToolBar, arrayToolBar.getWidth() - popupMenu.getPreferredSize().width, arrayToolBar.getHeight());
+                        } else {
+                            popupMenu.show(arrayToolBar, 0, arrayToolBar.getHeight());
+                        }
                     }
                 });
-                panel.add(arrayToolBar, BorderLayout.WEST);
+                if (alt)
+                    panel.add(arrayToolBar, BorderLayout.NORTH);
+                else
+                    panel.add(arrayToolBar, BorderLayout.WEST);
             }
             groups.add(panel);
         }
