@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -42,14 +44,14 @@ public class NumberTextField<T extends Number> extends JFormattedTextField {
         NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance()) {
             @Override
             public Object stringToValue(String text) throws ParseException {
-                if(text.isEmpty()) {
+                if (text.isEmpty()) {
                     return null;
                 }
                 return super.stringToValue(text);
             }
         };
         formatter.setValueClass(numberClass);
-        formatter.setAllowsInvalid(false);
+        formatter.setAllowsInvalid(true);
         formatter.setCommitsOnValidEdit(true);
 
         if (!allowNegatives) {
@@ -66,16 +68,15 @@ public class NumberTextField<T extends Number> extends JFormattedTextField {
     }
 
     public T getNumberValue() {
-        if(getText().isEmpty() && numberClass != null) {
+        if (getValue() == null && numberClass != null) {
             try {
                 //noinspection unchecked
-                return (T) numberClass.getDeclaredMethod("valueOf",String.class).invoke(null, "0");
+                return (T) numberClass.getDeclaredMethod("valueOf", String.class).invoke(null, "0");
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         }
-        //noinspection unchecked
-        return (T) super.getValue();
+        return getValue();
     }
 
     public Class<? extends Number> getNumberClass() {

@@ -18,13 +18,19 @@ import java.io.Serializable;
 
 public class FileField extends EditableField {
     private final JTextField textField;
+    private final DirectoryRestrictedFileSystemView fsv;
 
     public FileField(String name, File value, FileExtensions extensions, DirectoryRestrictedFileSystemView fsv, boolean editable) {
+        this.fsv = fsv;
+
         setLayout(new BorderLayout(5, 0));
         add(UIUtils.nameLabel(name), BorderLayout.WEST);
 
         JPanel valuePanel = new JPanel(new BorderLayout());
-        textField = new JTextField(value == null ? "" : value.getPath());
+        textField = new JTextField();
+        if(value == null) textField.setText("");
+        else if (fsv != null) textField.setText(getPathInDir(value.getPath(), fsv.getRoots()[0]));
+        else textField.setText(value.getPath());
         FlatRoundBorder border = new FlatRoundBorder();
         textField.setBorder(border);
         updateBorder(getFileValue().exists(), border);
@@ -63,7 +69,7 @@ public class FileField extends EditableField {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser;
-                if (fsv != null) fileChooser = new JFileChooser(fsv);
+                if (fsv != null) fileChooser = new JFileChooser(fsv.getRoots()[0], fsv);
                 else fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 if (extensions != null) {
@@ -95,7 +101,8 @@ public class FileField extends EditableField {
                 int returnVal = fileChooser.showOpenDialog(null);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
-                    textField.setText(file.getPath());
+                    if (fsv != null) textField.setText(getPathInDir(file.getPath(), fsv.getRoots()[0]));
+                    else textField.setText(file.getPath());
                 }
             }
         });
@@ -111,10 +118,19 @@ public class FileField extends EditableField {
         add(valuePanel, BorderLayout.CENTER);
     }
 
+    public static String getPathInDir(String path, File dir) {
+        String s = path.replace(dir.getPath(), "");
+        if(s.startsWith("/") || s.startsWith("\\")) s = s.substring(1);
+        return s;
+    }
+
     public FileField(String name, File value, FileExtensions extensions, boolean editable) {
         this(name, value, extensions, null, editable);
     }
 
+    private String getText() {
+        return fsv != null ? new File(fsv.getRoots()[0], textField.getText()).getPath() : textField.getText();
+    }
 
     public void updateBorder(boolean correct, FlatBorder border) {
         if (!correct) {
@@ -129,11 +145,15 @@ public class FileField extends EditableField {
     }
 
     public File getFileValue() {
-        return new File(textField.getText());
+        return new File(getText());
     }
 
     @Override
     public Serializable getValue() {
         return getFileValue();
+    }
+
+    public JTextField getTextField() {
+        return textField;
     }
 }
