@@ -36,7 +36,17 @@ public class UIUtils {
     }
 
     static {
-        RETURN_FIELD_MAP.put(String.class, ((name, value, editable, _) -> new StringField(name, (String) value, editable)));
+        RETURN_FIELD_MAP.put(String.class, ((name, value, editable, field) -> {
+            if (field.isAnnotationPresent(ComboString.class)) {
+                try {
+                    return new ComboField(name, (String) value, field.getAnnotation(ComboString.class).type().getMethod(field.getAnnotation(ComboString.class).method()), editable);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                return new StringField(name, (String) value, editable);
+            }
+        }));
         RETURN_FIELD_MAP.put(Color4f.class, ((name, value, editable, _) -> new ColorField(name, (Color4f) value, editable)));
         RETURN_FIELD_MAP.put(File.class, ((name, value, editable, field) -> new FileField(name, (File) value, field.getAnnotation(FileExtensions.class), editable)));
 
@@ -101,7 +111,15 @@ public class UIUtils {
         for (Pair<String, Pair<Serializable, Field>> field : fields) {
 
             if (field.second().second().getType().isArray()) {
-                ret.add(new Pair<>(field.first(), new ArrayField(field.second().second(), (Object[]) field.second().first(), field.second().second().getType().getComponentType(), field.second().second().isAnnotationPresent(Editable.class))));
+                if (field.second().second().isAnnotationPresent(ComboString.class)) {
+                    try {
+                        ret.add(new Pair<>(field.first(), new MultiComboField(field.second().second().getName(), (String[]) field.second().first(), field.second().second().getAnnotation(ComboString.class).type().getMethod(field.second().second().getAnnotation(ComboString.class).method()), true)));
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    ret.add(new Pair<>(field.first(), new ArrayField(field.second().second(), (Object[]) field.second().first(), field.second().second().getType().getComponentType(), field.second().second().isAnnotationPresent(Editable.class))));
+                }
             } else {
                 try {
                     ret.add(new Pair<>(field.first(), RETURN_FIELD_MAP.get(field.second().second().getType()).getEditableField(field.second().second().getName(), field.second().first(), field.second().second().isAnnotationPresent(Editable.class), field.second().second())));
