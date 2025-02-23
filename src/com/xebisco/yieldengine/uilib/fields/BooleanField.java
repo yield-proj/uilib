@@ -13,6 +13,10 @@ public class BooleanField extends EditableField {
         add(checkBox, BorderLayout.CENTER);
     }
 
+    public JCheckBox getCheckBox() {
+        return checkBox;
+    }
+
     @Override
     public Boolean getValue() {
         return checkBox.isSelected();

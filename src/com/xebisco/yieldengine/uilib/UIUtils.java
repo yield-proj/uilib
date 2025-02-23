@@ -1,6 +1,7 @@
 package com.xebisco.yieldengine.uilib;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
+import com.formdev.flatlaf.util.SystemInfo;
 import com.xebisco.yieldengine.uilib.fields.*;
 import com.xebisco.yieldengine.uilib.theme.DarkerLaf;
 import com.xebisco.yieldengine.utils.*;
@@ -80,12 +81,18 @@ public class UIUtils {
     }
 
     public static void setupLaf() {
+        if (SystemInfo.isLinux) {
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            JDialog.setDefaultLookAndFeelDecorated(true);
+        }
+
         DarkerLaf.setup();
 
         UIManager.put("Button.arc", 10);
         UIManager.put("Component.arc", 10);
         UIManager.put("ProgressBar.arc", 10);
         UIManager.put("TextComponent.arc", 10);
+
     }
 
     public static BufferedImage resizeImage(BufferedImage image, int resize) {

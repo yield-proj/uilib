@@ -44,6 +44,7 @@ public class CommandsDialog extends JDialog {
             }
         });
         setUndecorated(true);
+        getRootPane().setWindowDecorationStyle(JRootPane.NONE);
         setSize(500, 400);
         setLocationRelativeTo(null);
 

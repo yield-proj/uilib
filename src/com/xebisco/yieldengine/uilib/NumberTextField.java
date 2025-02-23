@@ -40,6 +40,11 @@ public class NumberTextField<T extends Number> extends JFormattedTextField {
         });
     }
 
+    @Override
+    public NumberFormatter getFormatter() {
+        return (NumberFormatter) super.getFormatter();
+    }
+
     private static NumberFormatter getNumberFormatter(Class<? extends Number> numberClass, boolean allowNegatives) {
         NumberFormatter formatter = new NumberFormatter(NumberFormat.getInstance()) {
             @Override
