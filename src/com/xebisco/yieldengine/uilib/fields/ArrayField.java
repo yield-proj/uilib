@@ -45,10 +45,11 @@ public class ArrayField extends EditableField {
 
         JButton addButton = new JButton("+");
         topToolBar.add(addButton);
-        topToolBar.setEnabled(editable);
+        addButton.setEnabled(editable);
         itemsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         JButton removeButton = new JButton("-");
+        removeButton.setEnabled(editable);
 
         topToolBar.add(removeButton);
 
@@ -66,14 +67,16 @@ public class ArrayField extends EditableField {
                          ClassNotFoundException | InstantiationException e) {
                     throw new RuntimeException(e);
                 }
-                removeButton.setEnabled(true);
+                if (editable)
+                    removeButton.setEnabled(true);
                 reload();
             });
         } else {
             addButton.addActionListener(_ -> {
                 reload();
                 this.array = ArrayUtils.insertLast(this.array, ObjectUtils.newInstance(arrayClass));
-                removeButton.setEnabled(true);
+                if (editable)
+                    removeButton.setEnabled(true);
                 reload();
             });
         }

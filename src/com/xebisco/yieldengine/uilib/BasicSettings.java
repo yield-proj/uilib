@@ -6,50 +6,63 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 public class BasicSettings implements Serializable {
     @Serial
     public static final long serialVersionUID = -2291406085025856206L;
 
-    public Workspace workspace = new Workspace();
+    public Workspace WORKSPACE;
 
-
+    public BasicSettings() {
+        for(Field f : getClass().getFields()) {
+            try {
+                if(f.get(this) == null) {
+                    f.set(this, f.getType().getConstructor().newInstance());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     protected Runnable help() {
         return () -> UIUtils.about(null, "", "Help Page");
     }
 
-    protected Pair<Runnable, DefaultMutableTreeNode> workspaceTab() {
-        JPanel workspacePanel = new JPanel(new BorderLayout());
-        workspacePanel.setName("Workspace");
-        Pair<Runnable, JPanel> v = UIUtils.getObjectsFieldsPanel(new Object[]{workspace});
-        workspacePanel.add(v.second());
-        return new Pair<>(v.first(), new DefaultMutableTreeNode(workspacePanel));
+    public static void addSection(Pair<ArrayList<Runnable>, ArrayList<DefaultMutableTreeNode>> tabs, String sectionName, Object... innerTabs) {
+        DefaultMutableTreeNode editorSettings = new DefaultMutableTreeNode();
+
+        List<Runnable> applyList = new ArrayList<>();
+
+        for (Object tab : innerTabs) {
+            Pair<Runnable, DefaultMutableTreeNode> tabPair = createTab(tab);
+            editorSettings.add(tabPair.second());
+            applyList.add(tabPair.first());
+        }
+        Pair<Runnable, DefaultMutableTreeNode> editorSettingsTab = new Pair<>(() -> applyList.forEach(Runnable::run), editorSettings);
+        UIUtils.depthPanel(editorSettingsTab.second(), sectionName);
+
+        tabs.second().add(editorSettingsTab.second());
+        tabs.first().add(editorSettingsTab.first());
     }
 
-    protected Pair<Runnable, DefaultMutableTreeNode> userTab() {
-        DefaultMutableTreeNode user = new DefaultMutableTreeNode();
-        Pair<Runnable, DefaultMutableTreeNode> workspaceTab = workspaceTab();
-        user.add(workspaceTab.second());
-
-        return new Pair<>(() -> {
-            workspaceTab.first().run();
-        }, user);
+    protected static Pair<Runnable, DefaultMutableTreeNode> createTab(Object tab) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setName(UIUtils.prettyString(tab.getClass().getSimpleName()));
+        Pair<Runnable, JPanel> v = UIUtils.getObjectsFieldsPanel(new Object[]{tab});
+        p.add(v.second());
+        return new Pair<>(v.first(), new DefaultMutableTreeNode(p));
     }
 
     protected Pair<ArrayList<Runnable>, ArrayList<DefaultMutableTreeNode>> tabs() {
-        ArrayList<DefaultMutableTreeNode> nodes = new ArrayList<>();
+        Pair<ArrayList<Runnable>, ArrayList<DefaultMutableTreeNode>> tabs = new Pair<>(new ArrayList<>(), new ArrayList<>());
 
-        ArrayList<Runnable> applyList = new ArrayList<>();
+        addSection(tabs, "User", WORKSPACE);
 
-        Pair<Runnable, DefaultMutableTreeNode> userTab = userTab();
-        UIUtils.depthPanel(userTab.second(), "User");
-
-        nodes.add(userTab.second());
-        applyList.add(userTab.first());
-
-        return new Pair<>(applyList, nodes);
+        return tabs;
     }
 
     public static class Workspace implements Serializable {

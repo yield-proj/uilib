@@ -4,6 +4,7 @@ import com.xebisco.yieldengine.uilib.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
 
 public class StringField extends EditableField {
     private final JTextField textField;
@@ -18,7 +19,7 @@ public class StringField extends EditableField {
     }
 
     @Override
-    public String getValue() {
+    public Serializable getValue() {
         return textField.getText();
     }
 }

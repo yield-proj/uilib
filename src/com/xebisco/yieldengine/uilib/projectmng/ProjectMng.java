@@ -99,7 +99,7 @@ public class ProjectMng extends OptionsFrame {
                     popupMenu.add(new AbstractAction("Remove") {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            SettingsWindow.INSTANCE.workspace.setProjects(ArrayUtils.remove(SettingsWindow.INSTANCE.workspace.getProjects(), p.getProjectPath()));
+                            SettingsWindow.INSTANCE.WORKSPACE.setProjects(ArrayUtils.remove(SettingsWindow.INSTANCE.WORKSPACE.getProjects(), p.getProjectPath()));
                             reload();
                         }
                     });
@@ -109,7 +109,7 @@ public class ProjectMng extends OptionsFrame {
             });
         }
         if (filter == null) filter = "";
-        projectsJList.setListData(getProjects(Stream.of(SettingsWindow.INSTANCE.workspace.getProjects()).filter(p -> p.getName().toUpperCase().contains(filter.toUpperCase())).toArray(File[]::new)));
+        projectsJList.setListData(getProjects(Stream.of(SettingsWindow.INSTANCE.WORKSPACE.getProjects()).filter(p -> p.getName().toUpperCase().contains(filter.toUpperCase())).toArray(File[]::new)));
 
         SwingUtilities.invokeLater(() -> ((JViewport) projectsJList.getParent()).updateUI());
     }
@@ -140,7 +140,7 @@ public class ProjectMng extends OptionsFrame {
             }
             project.setProjectPath(projectFile);
             project.setProjectDir(projectDir);
-            SettingsWindow.INSTANCE.workspace.setProjects(ArrayUtils.insertFirst(SettingsWindow.INSTANCE.workspace.getProjects(), project.getProjectPath()));
+            SettingsWindow.INSTANCE.WORKSPACE.setProjects(ArrayUtils.insertFirst(SettingsWindow.INSTANCE.WORKSPACE.getProjects(), project.getProjectPath()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -181,7 +181,7 @@ public class ProjectMng extends OptionsFrame {
                     Project project = projectClass.getDeclaredConstructor().newInstance();
                     JDialog dialog = new JDialog(ProjectMng.this, "New Project", true);
                     dialog.add(UIUtils.getObjectsFieldsPanel(new Object[]{project}, false, () -> {
-                        File projectDir = new File(SettingsWindow.INSTANCE.workspace.getDirectory(), project.getName());
+                        File projectDir = new File(SettingsWindow.INSTANCE.WORKSPACE.getDirectory(), project.getName());
                         addProject(project, projectDir);
                         reload();
                     }, dialog::dispose).second());
@@ -198,7 +198,7 @@ public class ProjectMng extends OptionsFrame {
         toolBar.add(new AbstractAction("Open") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                OpenProject openProject = UIUtils.openDialog(new OpenProject().setProjectFile(SettingsWindow.INSTANCE.workspace.getDirectory()), ProjectMng.this);
+                OpenProject openProject = UIUtils.openDialog(new OpenProject().setProjectFile(SettingsWindow.INSTANCE.WORKSPACE.getDirectory()), ProjectMng.this);
                 addProject(openProject.getProjectFile());
                 reload();
             }
