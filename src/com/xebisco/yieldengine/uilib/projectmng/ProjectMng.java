@@ -27,6 +27,9 @@ public class ProjectMng extends OptionsFrame {
     public ProjectMng(Class<? extends ProjectEditor> projectEditorClass, Class<? extends Project> projectClass) {
         this.projectEditorClass = projectEditorClass;
         this.projectClass = projectClass;
+        setMinimumSize(new Dimension(600, 500));
+        setSize(600, 500);
+        setLocationRelativeTo(null);
     }
 
     public final static ColorPalette PROJECT_PALETTE = new ColorPalette(null, "project");
@@ -209,12 +212,15 @@ public class ProjectMng extends OptionsFrame {
                 SettingsWindow.openSettings(ProjectMng.this);
             }
         });
+        /*
         toolBar.add(new AbstractAction("Reload") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reload();
             }
         });
+
+         */
 
         projectListPanel.add(toolBar, BorderLayout.NORTH);
 

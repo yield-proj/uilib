@@ -1,5 +1,6 @@
 package com.xebisco.yieldengine.uilib;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.util.SystemInfo;
 import com.xebisco.yieldengine.uilib.fields.*;
@@ -85,6 +86,8 @@ public class UIUtils {
             JFrame.setDefaultLookAndFeelDecorated(true);
             JDialog.setDefaultLookAndFeelDecorated(true);
         }
+
+        FlatLaf.registerCustomDefaultsSource("themes");
 
         DarkerLaf.setup();
 
